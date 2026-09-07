@@ -1,0 +1,40 @@
+XML COMPARATOR — PRIMER DESPLIEGUE EN GITHUB PAGES
+===================================================
+
+1) Crea en GitHub un repositorio llamado, por ejemplo:
+   xml-comparator
+
+2) Descomprime este paquete y abre PowerShell en la carpeta XML_Comparator_Web.
+
+3) Ejecuta, cambiando TU-USUARIO:
+
+   git init
+   git add .
+   git commit -m "Initial XML Comparator web"
+   git branch -M main
+   git remote add origin https://github.com/TU-USUARIO/xml-comparator.git
+   git push -u origin main
+
+4) En GitHub:
+   Settings -> Pages -> Build and deployment -> Source -> GitHub Actions
+
+5) Ve a Actions y abre:
+   Deploy XML Comparator
+
+6) Cuando termine en verde, tu URL será aproximadamente:
+   https://TU-USUARIO.github.io/xml-comparator/
+
+7) PRUEBA DE CONFIDENCIALIDAD RECOMENDADA:
+   - Abre la página.
+   - F12 -> Network.
+   - Carga dos XML de prueba.
+   - La carga/comparación no debe generar peticiones con los XML.
+   - También puedes cargar la página, desconectar Internet y después comparar dos XML.
+
+IMPORTANTE
+---------
+- No subas XML reales al repositorio.
+- El .gitignore ya bloquea *.xml y *.XML.
+- Esta edición no usa backend.
+- La CSP incluye connect-src 'none'.
+- XML con DOCTYPE/ENTITY son rechazados.

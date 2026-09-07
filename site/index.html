@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Comparador visual de archivos XML que procesa los archivos localmente en el navegador.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>XML Comparator</title>
+  <link rel="icon" href="./assets/xml-comparator-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="brand">
+        <img class="brandmark" src="./assets/xml-comparator-logo.svg" alt="XML Comparator">
+        <div><h1>XML Comparator</h1><div class="sub">Compara estructura, contenido y posibles cambios de lógica</div></div>
+      </div>
+      <button id="themeBtn" class="themeBtn" type="button" aria-label="Cambiar tema"></button>
+    </header>
+
+    <div id="error" class="error" role="alert"></div>
+
+    <section class="upload-grid" aria-label="Carga de archivos">
+      <article class="drop" id="dropA">
+        <div class="badge">A</div>
+        <div class="meta"><div class="name" id="nameA">Selecciona el archivo A</div><div class="info" id="infoA">Arrastra un XML aquí o selecciónalo</div><div class="statusline" id="statusA">Sin archivo</div></div>
+        <label class="pick">Elegir XML<input id="fileA" type="file" accept=".xml,text/xml,application/xml"></label>
+      </article>
+      <article class="drop" id="dropB">
+        <div class="badge">B</div>
+        <div class="meta"><div class="name" id="nameB">Selecciona el archivo B</div><div class="info" id="infoB">Arrastra un XML aquí o selecciónalo</div><div class="statusline" id="statusB">Sin archivo</div></div>
+        <label class="pick">Elegir XML<input id="fileB" type="file" accept=".xml,text/xml,application/xml"></label>
+      </article>
+    </section>
+
+    <section id="workspace" class="workspace">
+      <nav class="tabs" aria-label="Vistas">
+        <button class="tab active" data-view="generalView" type="button">Comparación general</button>
+        <button class="tab" data-view="xyView" type="button">Comparación X ↔ Y</button>
+      </nav>
+
+      <section id="generalView" class="view active">
+        <div id="stats" class="stats"></div>
+        <div class="filters">
+          <button class="chip active" data-category="added" type="button">Agregados</button>
+          <button class="chip active" data-category="removed" type="button">Eliminados</button>
+          <button class="chip active" data-category="modified" type="button">Modificados</button>
+          <button class="chip active" data-category="moved" type="button">Reordenados</button>
+          <label class="logicToggle"><input id="logicOnly" type="checkbox"> Solo lógica</label>
+          <select id="severity" aria-label="Severidad"><option value="">Toda severidad</option><option value="high">Alta</option><option value="medium">Media</option><option value="low">Baja</option></select>
+          <input id="searchChanges" type="search" placeholder="Buscar ruta, atributo, valor o tipo de cambio…">
+          <span id="resultCount" class="result-count"></span>
+        </div>
+        <div id="changes" class="change-list"></div>
+        <button id="more" class="more" type="button">Mostrar más</button>
+        <div id="changeDetail" class="detail"></div>
+      </section>
+
+      <section id="xyView" class="view">
+        <div class="xy-select">
+          <article class="node-picker"><h3>X · Archivo A</h3><input id="searchA" type="search" placeholder="Buscar tag, ruta, id, nombre, valor…"><div id="nodesA" class="node-results"></div></article>
+          <div class="vs">↔</div>
+          <article class="node-picker"><h3>Y · Archivo B</h3><input id="searchB" type="search" placeholder="Buscar tag, ruta, id, nombre, valor…"><div id="nodesB" class="node-results"></div></article>
+        </div>
+        <div class="comparebar"><button id="compareXY" class="primary" type="button" disabled>Comparar X ↔ Y</button><label class="check"><input id="deepXY" type="checkbox" checked> comparar subárbol completo</label></div>
+        <div id="xyResult" class="xy-result"></div>
+      </section>
+    </section>
+
+    <footer class="footer">XML Comparator · ejecución local en el navegador</footer>
+  </main>
+
+  <div id="busy" class="busy" aria-live="polite"><div class="busy-card"><div class="spinner"></div><div id="busyText">Analizando XML…</div></div></div>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Nunca subir XML reales o datos locales
+*.xml
+*.XML
+
+# Archivos locales / temporales
+.env
+.env.*
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Reportes generados por ediciones locales anteriores
+xml_compare*/
+xml_audit_output/
+comparison_report.html
+sanitized_*.json
+sanitized_*.txt
+security_check*.txt

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 72" role="img" aria-labelledby="title desc">
+  <title id="title">XML Comparator</title><desc id="desc">Símbolo geométrico de comparación XML.</desc>
+  <g fill="none" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M29 15 10 36l19 21" stroke="#f50537" stroke-width="7"/>
+    <path d="M59 15 78 36 59 57" stroke="#f50537" stroke-width="7"/>
+    <path d="M48 11 38 61" stroke="#92979d" stroke-width="6"/>
+  </g>
+</svg>
