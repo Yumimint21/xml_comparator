@@ -3,7 +3,7 @@ import { ComparatorEngine } from './engine.js';
 const engine = new ComparatorEngine();
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-const state = {offset:0, selectedA:null, selectedB:null, categories:new Set(['added','removed','modified','moved'])};
+const state = {offset:0, selectedA:null, selectedB:null, expandedChangeId:null, categories:new Set(['added','removed','modified','moved'])};
 const MAX_FILE = 100 * 1024 * 1024;
 
 function esc(v=''){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -64,7 +64,7 @@ function renderStats(s){
 
 function filterOptions(){return{categories:[...state.categories],query:$('#searchChanges').value,logicOnly:$('#logicOnly').checked,severity:$('#severity').value,offset:state.offset,limit:80};}
 function renderChanges(reset=false){
-  if(reset){state.offset=0;$('#changes').innerHTML='';}
+  if(reset){state.offset=0;state.expandedChangeId=null;$('#changes').innerHTML='';}
   const d=engine.changes(filterOptions());
   if(reset&&!d.items.length)$('#changes').innerHTML='<div class="empty">No hay cambios con estos filtros.</div>';
   for(const x of d.items)$('#changes').insertAdjacentHTML('beforeend',changeRow(x));
@@ -75,9 +75,43 @@ function renderChanges(reset=false){
 }
 function changeRow(x){
   const extra=(x.category==='added'||x.category==='removed')?`${(x.subtree_node_count||1).toLocaleString()} nodos`:x.attribute?`@${esc(x.attribute)}`:'';
-  return `<button class="change" data-id="${x.id}"><span class="kind ${x.category}">${esc(x.label)}</span><span class="reasonwrap"><b>${esc(x.reason_label)}</b><small>${esc(extra)}</small></span><code class="node-name">${esc(x.node_label||'XML')}</code>${x.possible_logic?'<span class="logic-dot">◆ lógica</span>':'<span></span>'}</button>`;
+  return `<article class="change-item category-${esc(x.category)}" data-change-id="${x.id}">
+    <button class="change" data-id="${x.id}" type="button" aria-expanded="false">
+      <span class="kind ${x.category}">${esc(x.label)}</span>
+      <span class="reasonwrap"><b>${esc(x.reason_label)}</b><small>${esc(extra)}</small></span>
+      <code class="node-name">${esc(x.node_label||'XML')}</code>
+      <span class="change-actions">${x.possible_logic?'<span class="logic-dot">◆ lógica</span>':'<span></span>'}<span class="chevron" aria-hidden="true">⌄</span></span>
+    </button>
+    <div class="inline-detail" data-detail-for="${x.id}"></div>
+  </article>`;
 }
-$('#changes').addEventListener('click',e=>{const row=e.target.closest('.change');if(!row)return;renderDetail(engine.detail(Number(row.dataset.id)));});
+$('#changes').addEventListener('click',e=>{
+  const close=e.target.closest('.inline-close');
+  if(close){
+    const item=close.closest('.change-item');
+    if(item) closeInlineDetail(item);
+    return;
+  }
+  const row=e.target.closest('.change');
+  if(!row)return;
+  const item=row.closest('.change-item');
+  if(!item)return;
+  const id=Number(row.dataset.id);
+  if(item.classList.contains('expanded')){closeInlineDetail(item);return;}
+  $$('#changes .change-item.expanded').forEach(closeInlineDetail);
+  const target=item.querySelector('.inline-detail');
+  target.innerHTML=detailHTML(engine.detail(id));
+  item.classList.add('expanded');
+  row.setAttribute('aria-expanded','true');
+  state.expandedChangeId=id;
+});
+function closeInlineDetail(item){
+  item.classList.remove('expanded');
+  item.querySelector('.change')?.setAttribute('aria-expanded','false');
+  const target=item.querySelector('.inline-detail');
+  if(target)target.innerHTML='';
+  if(state.expandedChangeId===Number(item.dataset.changeId))state.expandedChangeId=null;
+}
 $('#more').addEventListener('click',()=>renderChanges(false));
 
 for(const chip of $$('.chip[data-category]'))chip.addEventListener('click',()=>{const c=chip.dataset.category;if(state.categories.has(c))state.categories.delete(c);else state.categories.add(c);chip.classList.toggle('active',state.categories.has(c));renderChanges(true);});
@@ -89,10 +123,11 @@ function treeHTML(lines,empty='No existe en este archivo'){
   return `<div class="xml-tree">${lines.map((l,i)=>`<div class="xml-line status-${esc(l.status||'neutral')}"><span class="line-no">${i+1}</span><span class="tree-indent" style="width:${Math.max(0,Number(l.depth)||0)*18}px"></span><span class="xml-code">${esc(l.text)}</span></div>`).join('')}</div>`;
 }
 function treePanel(title,lines,empty){return`<section class="tree-panel"><header class="tree-title"><span>${esc(title)}</span><span>${lines?.length?`${lines.length.toLocaleString()} líneas`:''}</span></header>${treeHTML(lines,empty)}</section>`;}
-function renderDetail(d){
-  const oldv=d.data?.old,newv=d.data?.new;let meta='';if(oldv!==undefined||newv!==undefined)meta=`<div class="meta-box"><small>Cambio puntual</small><code>${oldv!==undefined?esc(oldv):'—'} <span>→</span> ${newv!==undefined?esc(newv):'—'}</code></div>`;
-  $('#changeDetail').innerHTML=`<div class="detail-head"><div><b>${esc(d.label)}</b><div class="detail-sub">${esc(d.reason_label)}${d.possible_logic?' · posible impacto lógico':''}</div></div><button class="close" id="closeDetail" aria-label="Cerrar">×</button></div><div class="tree-grid">${treePanel('Archivo A · anterior',d.old_tree,'El elemento aún no existía')}${treePanel('Archivo B · nuevo',d.new_tree,'El elemento fue eliminado')}</div><div class="legend"><span><i class="lg-added"></i>agregado</span><span><i class="lg-removed"></i>eliminado</span><span><i class="lg-modified"></i>modificado</span><span><i class="lg-moved"></i>reordenado</span></div>${meta}`;
-  $('#changeDetail').classList.add('show');$('#closeDetail').onclick=()=>$('#changeDetail').classList.remove('show');$('#changeDetail').scrollIntoView({behavior:'smooth',block:'nearest'});
+function detailHTML(d){
+  const oldv=d.data?.old,newv=d.data?.new;
+  let meta='';
+  if(oldv!==undefined||newv!==undefined)meta=`<div class="meta-box"><small>Cambio puntual</small><code>${oldv!==undefined?esc(oldv):'—'} <span>→</span> ${newv!==undefined?esc(newv):'—'}</code></div>`;
+  return `<div class="detail-head"><div><b>${esc(d.label)}</b><div class="detail-sub">${esc(d.reason_label)}${d.possible_logic?' · posible impacto lógico':''}</div></div><button class="close inline-close" type="button" aria-label="Cerrar detalle">×</button></div><div class="tree-grid">${treePanel('Archivo A · anterior',d.old_tree,'El elemento aún no existía')}${treePanel('Archivo B · nuevo',d.new_tree,'El elemento fue eliminado')}</div><div class="legend"><span><i class="lg-added"></i>agregado</span><span><i class="lg-removed"></i>eliminado</span><span><i class="lg-modified"></i>modificado</span><span><i class="lg-moved"></i>reordenado</span></div>${meta}`;
 }
 
 $$('.tab').forEach(tab=>tab.addEventListener('click',()=>{$$('.tab').forEach(t=>t.classList.toggle('active',t===tab));$$('.view').forEach(v=>v.classList.toggle('active',v.id===tab.dataset.view));}));
