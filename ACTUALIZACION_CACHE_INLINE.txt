@@ -1,0 +1,17 @@
+ACTUALIZACIÓN DE INTERFAZ - DETALLE INLINE + CACHE BUSTING
+
+Cambios:
+- El detalle de la comparación general se abre debajo de la fila seleccionada.
+- Se eliminan saltos automáticos en la comparación general.
+- CSS/JS usan un identificador de revisión en la URL para evitar que GitHub Pages o el navegador reutilicen archivos anteriores.
+- Se fuerza Node.js 24 en GitHub Actions para evitar el aviso de deprecación de Node 20 en acciones JavaScript compatibles.
+
+Después de reemplazar/subir:
+1. git add .
+2. git commit -m "Fix inline XML detail and cache"
+3. git push
+4. Espera el check verde de Actions.
+5. Abre la web y presiona Ctrl+Shift+R una vez.
+
+Comprobación opcional: F12 > Console debe mostrar:
+XML Comparator UI build: inline-detail-20260907-2

@@ -1,6 +1,7 @@
-import { ComparatorEngine } from './engine.js';
+import { ComparatorEngine } from './engine.js?rev=inline-20260907-2';
 
 const engine = new ComparatorEngine();
+console.info('XML Comparator UI build: inline-detail-20260907-2');
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const state = {offset:0, selectedA:null, selectedB:null, expandedChangeId:null, categories:new Set(['added','removed','modified','moved'])};
